@@ -1,0 +1,37 @@
+version: "2.1"
+
+services:
+
+  loragtwpktfwd:
+    restart: always
+    build:
+      context: loragtwpktfwd
+      args:
+        - LORA_REGION=EU868
+        - LORA_UDP=1680 #default "1680"
+        #- SPI_SPEED=8000000 #default 2000000
+        #- PIN_RESET=11
+        - MINER_URL=helium-miner #default "helium-miner"
+    privileged: true
+
+  helium-miner:
+    restart: always
+    image: pastagringo/lorapacketforwarder_sx1302_eu
+    ports:
+      - "44158:44158/tcp"
+      - "1680:1680/udp"
+    volumes:
+      - 'miner-data:/var/data'
+      - 'miner-log:/var/log/miner'
+    environment:
+      - 'REGION_OVERRIDE=EU868'
+
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/balena.sock:/var/run/docker.sock
+    command: --interval 10
+
+volumes:
+  miner-data:
+  miner-log:
